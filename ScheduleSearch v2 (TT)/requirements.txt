@@ -3,3 +3,8 @@
 # azure-monitor-opentelemetry
 
 azure-functions
+requests
+azure-communication-email
+azure-core
+azure-storage-blob
+six==1.16.0
