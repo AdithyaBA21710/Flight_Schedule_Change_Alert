@@ -5,6 +5,7 @@
 azure-functions
 requests
 azure-communication-email
+azure-data-tables
 azure-core
 azure-storage-blob
 six==1.16.0
