@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GATEWATCH — Flight Frequency Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #1B1E20;
+    --panel: #24282B;
+    --tile: #101418;
+    --hairline: #33383B;
+    --amber: #F2A93B;
+    --amber-dim: #8A6626;
+    --teal: #4FD1A5;
+    --red: #E1554F;
+    --text: #E8E6E1;
+    --text-dim: #8B9094;
+    --mono: 'IBM Plex Mono', ui-monospace, monospace;
+    --sans: 'IBM Plex Sans', -apple-system, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    background-image:
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 3px);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    padding: 0 0 64px;
+  }
+
+  a:focus-visible, button:focus-visible, input:focus-visible {
+    outline: 2px solid var(--amber);
+    outline-offset: 2px;
+  }
+
+  /* ---------- Header ---------- */
+  header {
+    border-bottom: 1px solid var(--hairline);
+    padding: 28px 24px 22px;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    max-width: 880px;
+    margin: 0 auto;
+  }
+
+  .brand {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+  }
+
+  h1 {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 26px;
+    letter-spacing: 0.12em;
+    color: var(--amber);
+    margin: 0;
+    text-shadow: 0 0 18px rgba(242, 169, 59, 0.25);
+  }
+
+  .tagline {
+    font-family: var(--sans);
+    font-size: 13px;
+    color: var(--text-dim);
+    letter-spacing: 0.02em;
+  }
+
+  .status-pill {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--teal);
+    border: 1px solid rgba(79, 209, 165, 0.35);
+    background: rgba(79, 209, 165, 0.08);
+    padding: 5px 10px;
+    border-radius: 3px;
+  }
+
+  .status-pill::before {
+    content: "●";
+    margin-right: 6px;
+    font-size: 8px;
+  }
+
+  main {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* ---------- Add route panel ---------- */
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--hairline);
+    border-radius: 6px;
+    margin-top: 28px;
+  }
+
+  .panel-heading {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    color: var(--text-dim);
+    padding: 16px 20px 0;
+  }
+
+  form#add-route {
+    display: flex;
+    align-items: flex-end;
+    gap: 14px;
+    padding: 14px 20px 20px;
+    flex-wrap: wrap;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .field label {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    font-family: var(--sans);
+    font-weight: 500;
+  }
+
+  .field input {
+    background: var(--tile);
+    border: 1px solid var(--hairline);
+    border-radius: 4px;
+    color: var(--amber);
+    font-family: var(--mono);
+    font-size: 15px;
+    letter-spacing: 0.06em;
+    padding: 10px 12px;
+    width: 110px;
+  }
+
+  .field input::placeholder { color: #4A5054; }
+
+  .field input[type="date"] {
+    width: 150px;
+    color-scheme: dark;
+  }
+
+  #dep, #arr {
+    text-transform: uppercase;
+    width: 80px;
+  }
+
+  button#track-btn {
+    background: var(--amber);
+    color: #1B1E20;
+    border: none;
+    border-radius: 4px;
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 14px;
+    padding: 11px 20px;
+    cursor: pointer;
+    transition: filter 0.15s ease, transform 0.15s ease;
+  }
+
+  button#track-btn:hover { filter: brightness(1.08); }
+  button#track-btn:active { transform: translateY(1px); }
+
+  .form-note {
+    font-size: 12px;
+    color: var(--text-dim);
+    padding: 0 20px 16px;
+    margin: -6px 0 0;
+  }
+
+  /* ---------- Board ---------- */
+  .board-heading {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    color: var(--text-dim);
+    margin: 34px 0 10px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .board {
+    border: 1px solid var(--hairline);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: 90px 90px 130px 90px 1fr 44px;
+    align-items: center;
+    background: var(--tile);
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .row:last-child { border-bottom: none; }
+
+  .row.head {
+    background: #191C1E;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    font-family: var(--sans);
+    font-weight: 500;
+  }
+
+  .row.head > div { padding: 10px 14px; }
+
+  .row:not(.head) {
+    animation: flip-in 0.5s ease backwards;
+  }
+
+  .row:not(.head) > div {
+    font-family: var(--mono);
+    font-size: 15px;
+    padding: 14px;
+    color: var(--text);
+    letter-spacing: 0.04em;
+  }
+
+  .row .dep, .row .arr { color: var(--amber); font-weight: 600; }
+  .row .freq { color: var(--teal); }
+  .row .freq.pending { color: var(--text-dim); font-style: italic; font-size: 12px; }
+
+  .row .route-arrow { color: var(--text-dim); padding: 0; text-align: center; }
+
+  .row-actions {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0 12px 0 0 !important;
+  }
+
+  .delete-btn {
+    background: transparent;
+    border: 1px solid var(--hairline);
+    color: var(--red);
+    border-radius: 4px;
+    width: 28px;
+    height: 28px;
+    font-family: var(--mono);
+    font-size: 15px;
+    line-height: 1;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+
+  .delete-btn:hover {
+    background: rgba(225, 85, 79, 0.1);
+    border-color: var(--red);
+  }
+
+  .empty-state {
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 14px;
+    display: none;
+  }
+
+  .empty-state strong {
+    display: block;
+    color: var(--text);
+    font-family: var(--mono);
+    letter-spacing: 0.08em;
+    margin-bottom: 6px;
+    font-size: 13px;
+  }
+
+  @keyframes flip-in {
+    from { opacity: 0; transform: scaleY(0.4); filter: blur(2px); }
+    to   { opacity: 1; transform: scaleY(1); filter: blur(0); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .row:not(.head) { animation: none; }
+  }
+
+  /* ---------- Mobile ---------- */
+  @media (max-width: 620px) {
+    .row.head { display: none; }
+
+    .row:not(.head) {
+      grid-template-columns: 1fr;
+      padding: 14px;
+      gap: 4px;
+      position: relative;
+    }
+
+    .row:not(.head) > div { padding: 2px 0; }
+
+    .row .route-arrow { display: none; }
+
+    .row-actions {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      padding: 0 !important;
+    }
+
+    .row .dep::before { content: "DEP  "; color: var(--text-dim); font-weight: 400; }
+    .row .arr::before { content: "ARR  "; color: var(--text-dim); font-weight: 400; }
+    .row .date::before { content: "DATE  "; color: var(--text-dim); }
+    .row .freq::before { content: "FREQ  "; color: var(--text-dim); }
+
+    form#add-route { flex-direction: column; align-items: stretch; }
+    .field input, button#track-btn { width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <h1>GATEWATCH</h1>
+    <span class="tagline">Flight frequency tracker</span>
+  </div>
+  <span class="status-pill">Board live</span>
+</header>
+
+<main>
+
+  <section class="panel">
+    <div class="panel-heading">ADD ROUTE</div>
+    <form id="add-route">
+      <div class="field">
+        <label for="dep">Departure</label>
+        <input type="text" id="dep" maxlength="3" placeholder="DEL" required>
+      </div>
+      <div class="field">
+        <label for="arr">Arrival</label>
+        <input type="text" id="arr" maxlength="3" placeholder="BOM" required>
+      </div>
+      <div class="field">
+        <label for="flight-date">Date</label>
+        <input type="date" id="flight-date" required>
+      </div>
+      <button type="submit" id="track-btn">Track route</button>
+    </form>
+    <p class="form-note">Frequency is filled in automatically after the next scheduled check.</p>
+  </section>
+
+  <div class="board-heading">
+    <span>TRACKED ROUTES</span>
+    <span id="route-count">3</span>
+  </div>
+
+  <div class="board" id="board">
+    <div class="row head">
+      <div>Dep</div>
+      <div>Arr</div>
+      <div>Date</div>
+      <div>Freq</div>
+      <div></div>
+      <div></div>
+    </div>
+
+    <!-- Rows below are placeholder data. Replace with rows rendered
+         from the GET /api/pairs response once the API is wired in. -->
+    <div class="row" style="animation-delay:0.05s" data-pk="Route" data-rk="DEL-BOM-2026-08-15">
+      <div class="dep">DEL</div>
+      <div class="arr">BOM</div>
+      <div class="date">2026-08-15</div>
+      <div class="freq">14x</div>
+      <div class="route-arrow">→</div>
+      <div class="row-actions"><button class="delete-btn" aria-label="Remove DEL to BOM on 2026-08-15">×</button></div>
+    </div>
+
+    <div class="row" style="animation-delay:0.12s" data-pk="Route" data-rk="BLR-DEL-2026-09-02">
+      <div class="dep">BLR</div>
+      <div class="arr">DEL</div>
+      <div class="date">2026-09-02</div>
+      <div class="freq">9x</div>
+      <div class="route-arrow">→</div>
+      <div class="row-actions"><button class="delete-btn" aria-label="Remove BLR to DEL on 2026-09-02">×</button></div>
+    </div>
+
+    <div class="row" style="animation-delay:0.19s" data-pk="Route" data-rk="HYD-BOM-2026-08-28">
+      <div class="dep">HYD</div>
+      <div class="arr">BOM</div>
+      <div class="date">2026-08-28</div>
+      <div class="freq pending">pending</div>
+      <div class="route-arrow">→</div>
+      <div class="row-actions"><button class="delete-btn" aria-label="Remove HYD to BOM on 2026-08-28">×</button></div>
+    </div>
+  </div>
+
+  <div class="empty-state" id="empty-state">
+    <strong>No routes tracked</strong>
+    Add a departure, arrival and date above to start watching a route.
+  </div>
+
+</main>
+
+<script>
+  // ---------------------------------------------------------------------
+  // Placeholder interactivity only — no API calls wired up yet.
+  // When you connect this to your Function App:
+  //   1. On page load: fetch(GET /api/pairs) and render rows from the
+  //      response instead of the hardcoded ones above.
+  //   2. On submit below: fetch(POST /api/pairs) with dep/arr/date,
+  //      then either re-fetch the list or append the returned row.
+  //   3. On delete click: fetch(DELETE /api/pairs) with that row's
+  //      PartitionKey/RowKey (already stored in data-pk / data-rk below).
+  //   4. Send your access code as a header on every call, e.g.
+  //      headers: { 'x-api-key': ACCESS_CODE }
+  // ---------------------------------------------------------------------
+
+  const board = document.getElementById('board');
+  const routeCount = document.getElementById('route-count');
+  const emptyState = document.getElementById('empty-state');
+
+  function updateCount() {
+    const rows = board.querySelectorAll('.row:not(.head)');
+    routeCount.textContent = rows.length;
+    emptyState.style.display = rows.length === 0 ? 'block' : 'none';
+    board.style.display = rows.length === 0 ? 'none' : 'block';
+  }
+
+  board.addEventListener('click', (e) => {
+    const btn = e.target.closest('.delete-btn');
+    if (!btn) return;
+    const row = btn.closest('.row');
+    // TODO: call DELETE /api/pairs with row.dataset.pk / row.dataset.rk
+    // before removing from the DOM — remove only after a success response.
+    row.remove();
+    updateCount();
+  });
+
+  document.getElementById('add-route').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const dep = document.getElementById('dep').value.trim().toUpperCase();
+    const arr = document.getElementById('arr').value.trim().toUpperCase();
+    const date = document.getElementById('flight-date').value;
+    if (!dep || !arr || !date) return;
+
+    // TODO: call POST /api/pairs with { DEP: dep, ARR: arr, DATE: date }
+    // and only render the row once you get a 201 back.
+    const row = document.createElement('div');
+    row.className = 'row';
+    row.dataset.pk = 'Route';
+    row.dataset.rk = `${dep}-${arr}-${date}`;
+    row.innerHTML = `
+      <div class="dep">${dep}</div>
+      <div class="arr">${arr}</div>
+      <div class="date">${date}</div>
+      <div class="freq pending">pending</div>
+      <div class="route-arrow">→</div>
+      <div class="row-actions"><button class="delete-btn" aria-label="Remove ${dep} to ${arr} on ${date}">×</button></div>
+    `;
+    board.appendChild(row);
+    updateCount();
+    e.target.reset();
+  });
+</script>
+
+</body>
+</html>
