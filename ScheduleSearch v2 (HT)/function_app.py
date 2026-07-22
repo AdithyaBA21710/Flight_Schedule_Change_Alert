@@ -36,7 +36,7 @@ def http_get(req: func.HttpRequest) -> func.HttpResponse:
 
 @app.route(route="http_post", methods=['POST'])
 def http_post(req: func.HttpRequest) -> func.HttpResponse:
-    code = req.params.get('code')
+    code = req.headers.get('code')
     
     e_code=os.environ.get('ACCESS_CODE')
 
@@ -91,7 +91,7 @@ def http_post(req: func.HttpRequest) -> func.HttpResponse:
     
 @app.route(route="http_del",methods=["DELETE"])
 def http_del(req: func.HttpRequest) -> func.HttpResponse:
-    code = req.params.get('code')
+    code = req.headers.get('code')
     
     e_code=os.environ.get('ACCESS_CODE')
 
