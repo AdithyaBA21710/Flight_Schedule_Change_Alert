@@ -28,8 +28,6 @@
   body {
     margin: 0;
     background: var(--bg);
-    background-image:
-      repeating-linear-gradient(0deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 3px);
     color: var(--text);
     font-family: var(--sans);
     min-height: 100vh;
@@ -41,9 +39,28 @@
     outline-offset: 2px;
   }
 
-  /* ---------- Header ---------- */
-  header {
+  /* ---------- Hero / gradient band ---------- */
+  .hero {
+    background-color: #0A0A0B;
+    background-image:
+      radial-gradient(ellipse 75% 100% at 108% -25%, rgba(255, 176, 74, 0.55) 0%, rgba(255, 176, 74, 0.28) 30%, transparent 60%),
+      radial-gradient(ellipse 60% 75% at 96% 15%, rgba(168, 196, 74, 0.32) 0%, transparent 60%),
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.035) 0px, rgba(255,255,255,0.035) 1px, transparent 1px, transparent 42px),
+      repeating-linear-gradient(90deg, rgba(255,255,255,0.035) 0px, rgba(255,255,255,0.035) 1px, transparent 1px, transparent 42px);
+    -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 65%, transparent 100%);
+            mask-image: linear-gradient(180deg, #000 0%, #000 65%, transparent 100%);
+    position: relative;
+    overflow: hidden;
     border-bottom: 1px solid var(--hairline);
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+  }
+
+  header {
+    position: relative;
+    z-index: 1;
+    width: 100%;
     padding: 28px 24px 22px;
     display: flex;
     align-items: baseline;
@@ -67,7 +84,7 @@
     letter-spacing: 0.12em;
     color: var(--amber);
     margin: 0;
-    text-shadow: 0 0 18px rgba(242, 169, 59, 0.25);
+    text-shadow: 0 0 20px rgba(242, 169, 59, 0.35);
   }
 
   .tagline {
@@ -100,28 +117,175 @@
     padding: 0 24px;
   }
 
-  /* ---------- Add route panel ---------- */
-  .panel {
-    background: var(--panel);
-    border: 1px solid var(--hairline);
-    border-radius: 6px;
+  /* ---------- Toggle button ---------- */
+  .toolbar {
+    display: flex;
+    justify-content: flex-end;
     margin-top: 28px;
   }
 
-  .panel-heading {
-    font-family: var(--mono);
-    font-size: 12px;
-    letter-spacing: 0.14em;
-    color: var(--text-dim);
-    padding: 16px 20px 0;
+  #toggle-add {
+    background: transparent;
+    color: var(--amber);
+    border: 1px solid var(--amber-dim);
+    border-radius: 4px;
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 13px;
+    padding: 9px 16px;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
   }
 
-  form#add-route {
+  #toggle-add:hover {
+    background: rgba(242, 169, 59, 0.08);
+    border-color: var(--amber);
+  }
+
+  #toggle-add[aria-expanded="true"] {
+    background: rgba(242, 169, 59, 0.12);
+    border-color: var(--amber);
+  }
+
+  /* ---------- Access code field (used inside the modal) ---------- */
+  .access-code-field {
     display: flex;
-    align-items: flex-end;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .access-code-field label {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    font-family: var(--sans);
+    font-weight: 500;
+  }
+
+  .access-code-field input {
+    background: var(--tile);
+    border: 1px solid var(--hairline);
+    border-radius: 4px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 14px;
+    letter-spacing: 0.12em;
+    padding: 10px 12px;
+    width: 100%;
+    transition: border-color 0.15s ease;
+  }
+
+  .access-code-field input::placeholder { color: #4A5054; letter-spacing: 0.02em; }
+
+  .access-code-field input.invalid {
+    border-color: var(--red);
+    animation: shake 0.3s ease;
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-4px); }
+    75% { transform: translateX(4px); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .access-code-field input.invalid { animation: none; }
+  }
+
+  /* ---------- Modal ---------- */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(8, 9, 10, 0.72);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    z-index: 50;
+  }
+
+  .modal-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .modal {
+    background: var(--panel);
+    border: 1px solid var(--hairline);
+    border-radius: 8px;
+    width: 100%;
+    max-width: 380px;
+    padding: 22px 24px 24px;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55);
+    transform: scale(0.94) translateY(10px);
+    opacity: 0;
+    transition: transform 0.22s ease, opacity 0.22s ease;
+  }
+
+  .modal-overlay.open .modal {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .modal-overlay, .modal { transition: none; }
+  }
+
+  .modal-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2px;
+  }
+
+  .modal-title {
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 0.14em;
+    color: var(--amber);
+  }
+
+  .modal-close {
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+  }
+
+  .modal-close:hover { color: var(--text); }
+
+  .modal-sub {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin: 2px 0 18px;
+  }
+
+  #add-route {
+    display: flex;
+    flex-direction: column;
     gap: 14px;
-    padding: 14px 20px 20px;
-    flex-wrap: wrap;
+  }
+
+  #add-route .field-row {
+    display: flex;
+    gap: 12px;
+  }
+
+  #add-route .field { flex: 1; }
+
+  #add-route .field input { width: 100%; }
+
+  #add-route button#track-btn {
+    width: 100%;
+    margin-top: 4px;
   }
 
   .field {
@@ -152,14 +316,21 @@
 
   .field input::placeholder { color: #4A5054; }
 
+  .field input.invalid {
+    border-color: var(--red);
+    animation: shake 0.3s ease;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .field input.invalid { animation: none; }
+  }
+
   .field input[type="date"] {
-    width: 150px;
     color-scheme: dark;
   }
 
   #dep, #arr {
     text-transform: uppercase;
-    width: 80px;
   }
 
   button#track-btn {
@@ -178,11 +349,111 @@
   button#track-btn:hover { filter: brightness(1.08); }
   button#track-btn:active { transform: translateY(1px); }
 
+  .modal-done-btn {
+    background: var(--amber);
+    color: #1B1E20;
+    border: none;
+    border-radius: 4px;
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 14px;
+    padding: 11px 20px;
+    cursor: pointer;
+    transition: filter 0.15s ease, transform 0.15s ease;
+  }
+
+  .modal-done-btn:hover { filter: brightness(1.08); }
+  .modal-done-btn:active { transform: translateY(1px); }
+
   .form-note {
     font-size: 12px;
     color: var(--text-dim);
-    padding: 0 20px 16px;
-    margin: -6px 0 0;
+    margin: 0;
+  }
+
+  /* ---------- Success modal / airplane animation ---------- */
+  .plane-stage {
+    position: relative;
+    height: 76px;
+    margin-bottom: 6px;
+  }
+
+  .flight-line {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .flight-line path {
+    fill: none;
+    stroke: var(--hairline);
+    stroke-width: 2;
+    stroke-dasharray: 3 7;
+    stroke-linecap: round;
+  }
+
+  .plane-icon {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 26px;
+    height: 26px;
+    color: var(--amber);
+    filter: drop-shadow(0 0 6px rgba(242, 169, 59, 0.55));
+    offset-path: path("M10,66 C 90,4 230,4 320,34");
+    offset-rotate: auto;
+    opacity: 0;
+  }
+
+  .plane-icon.flying {
+    animation: fly-across 1.3s cubic-bezier(0.45, 0, 0.2, 1) forwards;
+  }
+
+  @keyframes fly-across {
+    0%   { offset-distance: 0%;   opacity: 0; transform: scale(0.7); }
+    8%   { opacity: 1; transform: scale(1); }
+    100% { offset-distance: 100%; opacity: 1; transform: scale(1); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .plane-stage { display: none; }
+  }
+
+  .success-check {
+    width: 40px;
+    height: 40px;
+    margin: 0 auto 14px;
+    border-radius: 50%;
+    background: rgba(79, 209, 165, 0.14);
+    border: 1px solid var(--teal);
+    color: var(--teal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 19px;
+    opacity: 0;
+    transform: scale(0.6);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+
+  .success-check.show { opacity: 1; transform: scale(1); }
+
+  .success-title {
+    text-align: center;
+    font-family: var(--sans);
+    color: var(--text-dim);
+    font-size: 13px;
+    margin: 0 0 4px;
+  }
+
+  .success-route {
+    text-align: center;
+    font-family: var(--mono);
+    color: var(--amber);
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    margin: 0 0 22px;
   }
 
   /* ---------- Board ---------- */
@@ -294,6 +565,28 @@
 
   /* ---------- Mobile ---------- */
   @media (max-width: 620px) {
+    .hero { padding: 0 4px; }
+
+    header {
+      padding: 20px 16px 18px;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    h1 { font-size: 21px; letter-spacing: 0.08em; }
+    .tagline { font-size: 12px; }
+
+    main { padding: 0 16px; }
+
+    .toolbar { margin-top: 20px; }
+    #toggle-add { width: 100%; padding: 12px 16px; font-size: 14px; }
+
+    .modal { padding: 20px; }
+    #add-route .field-row { flex-direction: column; gap: 14px; }
+
+    .board-heading { margin: 26px 0 8px; }
+
     .row.head { display: none; }
 
     .row:not(.head) {
@@ -318,43 +611,81 @@
     .row .arr::before { content: "ARR  "; color: var(--text-dim); font-weight: 400; }
     .row .date::before { content: "DATE  "; color: var(--text-dim); }
     .row .freq::before { content: "FREQ  "; color: var(--text-dim); }
+  }
 
-    form#add-route { flex-direction: column; align-items: stretch; }
-    .field input, button#track-btn { width: 100%; }
+  /* ---------- Small phones ---------- */
+  @media (max-width: 380px) {
+    h1 { font-size: 18px; }
+    .status-pill { font-size: 10px; padding: 4px 8px; }
+    .row:not(.head) > div { font-size: 13px; }
   }
 </style>
 </head>
 <body>
 
-<header>
-  <div class="brand">
-    <h1>GATEWATCH</h1>
-    <span class="tagline">Flight frequency tracker</span>
-  </div>
-  <span class="status-pill">Board live</span>
-</header>
+<div class="hero">
+  <header>
+    <div class="brand">
+      <h1>GATEWATCH</h1>
+      <span class="tagline">Flight frequency tracker</span>
+    </div>
+    <span class="status-pill">Board live</span>
+  </header>
+</div>
 
 <main>
 
-  <section class="panel">
-    <div class="panel-heading">ADD ROUTE</div>
-    <form id="add-route">
-      <div class="field">
-        <label for="dep">Departure</label>
-        <input type="text" id="dep" maxlength="3" placeholder="DEL" required>
+  <div class="toolbar">
+    <button type="button" id="toggle-add">+ Track new route</button>
+  </div>
+
+  <div class="modal-overlay" id="add-overlay">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="add-modal-title">
+      <div class="modal-title-row">
+        <span class="modal-title" id="add-modal-title">ADD ROUTE</span>
+        <button type="button" class="modal-close" id="add-modal-close" aria-label="Close">×</button>
       </div>
-      <div class="field">
-        <label for="arr">Arrival</label>
-        <input type="text" id="arr" maxlength="3" placeholder="BOM" required>
+      <p class="modal-sub">Frequency is looked up live and saved with the route.</p>
+      <form id="add-route">
+        <div class="field-row">
+          <div class="field">
+            <label for="dep">Departure</label>
+            <input type="text" id="dep" maxlength="3" placeholder="DEL">
+          </div>
+          <div class="field">
+            <label for="arr">Arrival</label>
+            <input type="text" id="arr" maxlength="3" placeholder="BOM">
+          </div>
+        </div>
+        <div class="field">
+          <label for="flight-date">Date</label>
+          <input type="date" id="flight-date">
+        </div>
+        <div class="access-code-field">
+          <label for="access-code">Access code</label>
+          <input type="password" id="access-code" placeholder="required to add/delete" autocomplete="off">
+        </div>
+        <button type="submit" id="track-btn">Track route</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="success-overlay">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="success-modal-title">
+      <div class="plane-stage">
+        <svg class="flight-line" viewBox="0 0 332 76" preserveAspectRatio="none">
+          <path d="M10,66 C 90,4 230,4 320,34" />
+        </svg>
+        <svg class="plane-icon" id="plane-icon" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M2 12 L22 3 L15 21 L11.5 13.5 L2 12 Z" />
+        </svg>
       </div>
-      <div class="field">
-        <label for="flight-date">Date</label>
-        <input type="date" id="flight-date" required>
-      </div>
-      <button type="submit" id="track-btn">Track route</button>
-    </form>
-    <p class="form-note">Frequency is filled in automatically after the next scheduled check.</p>
-  </section>
+      <div class="success-check" id="success-check">✓</div>
+      <p class="success-title" id="success-modal-title">Route tracked</p>
+      <p class="success-route" id="success-route-text">DEL → BOM</p>
+      <button type="button" id="success-done-btn" class="modal-done-btn" style="width:100%">Done</button>
+    </div>
+  </div>
 
   <div class="board-heading">
     <span>TRACKED ROUTES</span>
@@ -395,7 +726,7 @@
       <div class="dep">HYD</div>
       <div class="arr">BOM</div>
       <div class="date">2026-08-28</div>
-      <div class="freq pending">pending</div>
+      <div class="freq">6x</div>
       <div class="route-arrow">→</div>
       <div class="row-actions"><button class="delete-btn" aria-label="Remove HYD to BOM on 2026-08-28">×</button></div>
     </div>
@@ -414,8 +745,12 @@
   // When you connect this to your Function App:
   //   1. On page load: fetch(GET /api/pairs) and render rows from the
   //      response instead of the hardcoded ones above.
-  //   2. On submit below: fetch(POST /api/pairs) with dep/arr/date,
-  //      then either re-fetch the list or append the returned row.
+  //   2. On submit below: fetch(POST /api/pairs) with dep/arr/date.
+  //      Your http_post now looks up the real frequency itself before
+  //      writing the row, so the response body already contains FREQ —
+  //      render the row using that returned value directly, no polling
+  //      or "pending" placeholder needed. Only show the success modal
+  //      after a real 201 comes back, not before.
   //   3. On delete click: fetch(DELETE /api/pairs) with that row's
   //      PartitionKey/RowKey (already stored in data-pk / data-rk below).
   //   4. Send your access code as a header on every call, e.g.
@@ -425,6 +760,55 @@
   const board = document.getElementById('board');
   const routeCount = document.getElementById('route-count');
   const emptyState = document.getElementById('empty-state');
+  const accessCodeInput = document.getElementById('access-code');
+
+  // Reads the code fresh at the moment of each request — nothing is
+  // stored beyond what's sitting in the input, and it's cleared the
+  // moment the page is reloaded or closed.
+  function getAccessCode() {
+    const value = accessCodeInput.value.trim();
+    if (!value) {
+      accessCodeInput.classList.add('invalid');
+      accessCodeInput.focus();
+      setTimeout(() => accessCodeInput.classList.remove('invalid'), 300);
+      return null;
+    }
+    return value;
+  }
+
+  // ---------- Generic modal open/close ----------
+  function openModal(overlay, focusEl) {
+    overlay.classList.add('open');
+    if (focusEl) focusEl.focus();
+  }
+
+  function closeModal(overlay) {
+    overlay.classList.remove('open');
+  }
+
+  document.querySelectorAll('.modal-overlay').forEach((overlay) => {
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) closeModal(overlay); // backdrop click
+    });
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    document.querySelectorAll('.modal-overlay.open').forEach(closeModal);
+  });
+
+  // ---------- Add-route modal ----------
+  const toggleBtn = document.getElementById('toggle-add');
+  const addOverlay = document.getElementById('add-overlay');
+  const addForm = document.getElementById('add-route');
+
+  toggleBtn.addEventListener('click', () => {
+    openModal(addOverlay, document.getElementById('dep'));
+  });
+
+  document.getElementById('add-modal-close').addEventListener('click', () => {
+    closeModal(addOverlay);
+  });
 
   function updateCount() {
     const rows = board.querySelectorAll('.row:not(.head)');
@@ -436,22 +820,55 @@
   board.addEventListener('click', (e) => {
     const btn = e.target.closest('.delete-btn');
     if (!btn) return;
+
+    const code = getAccessCode();
+    if (!code) return; // blocked — invalid state already shown on the input
+
     const row = btn.closest('.row');
-    // TODO: call DELETE /api/pairs with row.dataset.pk / row.dataset.rk
-    // before removing from the DOM — remove only after a success response.
+    // TODO: fetch(`.../api/http_del?PartitionKey=${row.dataset.pk}&RowKey=${row.dataset.rk}`,
+    //   { method: 'DELETE', headers: { 'x-api-key': code } })
+    // remove the row from the DOM only after a success response.
     row.remove();
     updateCount();
   });
 
-  document.getElementById('add-route').addEventListener('submit', (e) => {
+  addForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    const dep = document.getElementById('dep').value.trim().toUpperCase();
-    const arr = document.getElementById('arr').value.trim().toUpperCase();
-    const date = document.getElementById('flight-date').value;
-    if (!dep || !arr || !date) return;
 
-    // TODO: call POST /api/pairs with { DEP: dep, ARR: arr, DATE: date }
-    // and only render the row once you get a 201 back.
+    const code = getAccessCode();
+    if (!code) return; // blocked — invalid state already shown on the input
+
+    const depInput = document.getElementById('dep');
+    const arrInput = document.getElementById('arr');
+    const dateInput = document.getElementById('flight-date');
+
+    const dep = depInput.value.trim().toUpperCase();
+    const arr = arrInput.value.trim().toUpperCase();
+    const date = dateInput.value;
+
+    let firstInvalid = null;
+    [[depInput, dep], [arrInput, arr], [dateInput, date]].forEach(([input, val]) => {
+      if (!val) {
+        input.classList.add('invalid');
+        setTimeout(() => input.classList.remove('invalid'), 300);
+        if (!firstInvalid) firstInvalid = input;
+      }
+    });
+    if (firstInvalid) {
+      firstInvalid.focus();
+      return;
+    }
+
+    // TODO: fetch('.../api/http_post', {
+    //   method: 'POST',
+    //   headers: { 'Content-Type': 'application/json', 'x-api-key': code },
+    //   body: JSON.stringify({ DEP: dep, ARR: arr, DATE: date })
+    // });
+    // http_post looks up the frequency live and returns it — use that
+    // real value (response.FREQ below is a stand-in) rather than a
+    // placeholder, and only proceed to the success modal once you get
+    // a 201 back.
+    const freq = '—'; // TODO: replace with FREQ from the POST response
     const row = document.createElement('div');
     row.className = 'row';
     row.dataset.pk = 'Route';
@@ -460,13 +877,47 @@
       <div class="dep">${dep}</div>
       <div class="arr">${arr}</div>
       <div class="date">${date}</div>
-      <div class="freq pending">pending</div>
+      <div class="freq">${freq}</div>
       <div class="route-arrow">→</div>
       <div class="row-actions"><button class="delete-btn" aria-label="Remove ${dep} to ${arr} on ${date}">×</button></div>
     `;
     board.appendChild(row);
     updateCount();
-    e.target.reset();
+    addForm.reset();
+
+    closeModal(addOverlay);
+    showSuccess(dep, arr);
+  });
+
+  // ---------- Success modal (flight animation) ----------
+  const successOverlay = document.getElementById('success-overlay');
+  const successRouteText = document.getElementById('success-route-text');
+  const successCheck = document.getElementById('success-check');
+  const planeIcon = document.getElementById('plane-icon');
+
+  function showSuccess(dep, arr) {
+    successRouteText.textContent = `${dep} → ${arr}`;
+    successCheck.classList.remove('show');
+
+    openModal(successOverlay);
+
+    // Restart the plane animation each time by removing and re-adding
+    // the class (a class that's already present won't re-trigger).
+    planeIcon.classList.remove('flying');
+    void planeIcon.offsetWidth; // force reflow so the browser notices
+    planeIcon.classList.add('flying');
+
+    const revealCheck = () => successCheck.classList.add('show');
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      revealCheck(); // no animation to wait for
+    } else {
+      planeIcon.addEventListener('animationend', revealCheck, { once: true });
+    }
+  }
+
+  document.getElementById('success-done-btn').addEventListener('click', () => {
+    closeModal(successOverlay);
   });
 </script>
 
